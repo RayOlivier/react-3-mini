@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
-import logo from './mainStreetAuto.svg';
-import axios from 'axios';
-import './App.css';
+import React, { Component } from "react";
+import logo from "./mainStreetAuto.svg";
+import axios from "axios";
+import "./App.css";
 
 // Toast notification dependencies
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
+
+const BASE_URL = "https://joes-autos.herokuapp.com/api";
 
 class App extends Component {
   constructor(props) {
@@ -28,9 +30,27 @@ class App extends Component {
     this.deleteBuyer = this.deleteBuyer.bind(this);
   }
 
+  componentDidMount() {
+    this.getVehicles();
+  }
+
   getVehicles() {
     // axios (GET)
     // setState with response -> vehiclesToDisplay
+    console.log(BASE_URL + "/vehicles");
+    axios
+      .get(BASE_URL + "/vehicles")
+      .then(res => {
+        console.log("first");
+        this.setState({ vehiclesToDisplay: res.data });
+      })
+      .then(res => {
+        console.log("second");
+        //console.log("res: ", res);
+      })
+      .catch(err => {
+        toast.error("Failed to fetch vehicles :(");
+      });
   }
 
   getPotentialBuyers() {
@@ -60,6 +80,14 @@ class App extends Component {
   updatePrice(priceChange, id) {
     // axios (PUT)
     // setState with response -> vehiclesToDisplay
+    console.log(`${BASE_URL}/vehicles/${id}/${priceChange}`);
+    axios
+      .put(`${BASE_URL}/vehicles/${id}/${priceChange}`)
+      .then(res => {
+        console.log("res: ", res);
+        this.setState({ vehiclesToDisplay: res.data.vehicles });
+      })
+      .catch(err => toast.error("Failed to increase price"));
   }
 
   addCar() {
@@ -70,9 +98,16 @@ class App extends Component {
       year: this.year.value,
       price: this.price.value
     };
-
+    console.log(newCar);
     // axios (POST)
     // setState with response -> vehiclesToDisplay
+    axios
+      .post(`${BASE_URL}/vehicles`, newCar) //axios automatically adds newCar
+      .then(res => {
+        console.log("res: ", res);
+        this.setState({ vehiclesToDisplay: res.data.vehicles });
+      })
+      .catch(err => toast.error("Failed to add new car"));
   }
 
   addBuyer() {
@@ -108,9 +143,9 @@ class App extends Component {
   // Do not edit the code below
   resetData(dataToReset) {
     axios
-      .get('https://joes-autos.herokuapp.com/api/' + dataToReset + '/reset')
+      .get("https://joes-autos.herokuapp.com/api/" + dataToReset + "/reset")
       .then(res => {
-        if (dataToReset === 'vehicles') {
+        if (dataToReset === "vehicles") {
           this.setState({ vehiclesToDisplay: res.data.vehicles });
         } else {
           this.setState({ buyersToDisplay: res.data.buyers });
@@ -131,14 +166,14 @@ class App extends Component {
 
           <button
             className="btn btn-sp"
-            onClick={() => this.updatePrice('up', v.id)}
+            onClick={() => this.updatePrice("up", v.id)}
           >
             Increase Price
           </button>
 
           <button
             className="btn btn-sp"
-            onClick={() => this.updatePrice('down', v.id)}
+            onClick={() => this.updatePrice("down", v.id)}
           >
             Decrease Price
           </button>
@@ -182,14 +217,14 @@ class App extends Component {
 
           <button
             className="header-btn1 btn"
-            onClick={() => this.resetData('vehicles')}
+            onClick={() => this.resetData("vehicles")}
           >
             Reset Vehicles
           </button>
 
           <button
             className="header-btn2 btn"
-            onClick={() => this.resetData('buyers')}
+            onClick={() => this.resetData("buyers")}
           >
             Reset Buyers
           </button>
